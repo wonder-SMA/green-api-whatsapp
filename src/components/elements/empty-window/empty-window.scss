@@ -1,0 +1,32 @@
+.empty-window {
+	border-left: 1px solid #e9edef;
+	display: flex;
+	flex-grow: 1;
+	justify-content: center;
+	align-items: center;
+	background-color: #f0f2f5;
+	overflow: hidden;
+	
+	.empty-window__intro {
+		width: 80%;
+		max-width: 560px;
+		text-align: center;
+		
+		.empty-window__intro-title {
+			margin-top: 40px;
+			display: inline-flex;
+			font-size: 32px;
+			font-weight: 300;
+			line-height: 37.5px;
+			color: #41525d;
+		}
+		
+		.empty-window__intro-text {
+			margin-top: 16px;
+			font-size: 14px;
+			font-weight: 400;
+			line-height: 20px;
+			color: #667781;
+		}
+	}
+}

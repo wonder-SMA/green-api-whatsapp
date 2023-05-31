@@ -1,0 +1,29 @@
+.time-message {
+	position: relative;
+	width: 100%;
+	margin-bottom: 12px;
+	padding: 0 8%;
+	display: flex;
+	justify-content: center;
+	
+	.time-message__body-wrapper {
+		position: relative;
+		max-width: 85%;
+		border-radius: 7.5px;
+		padding: 8px;
+		flex: none;
+		font-size: 13px;
+		line-height: 20px;
+		color: #667781;
+		background-color: white;
+		box-shadow: 0 1px 0.5px rgba(11, 20, 26, .13);
+		
+		.time-message__body-content {
+			display: flex;
+			flex-direction: row;
+			overflow-wrap: break-word;
+			white-space: pre-wrap;
+			user-select: text;
+		}
+	}
+}

@@ -1,0 +1,13 @@
+.filter-icon-button {
+	width: 32px;
+	margin: 0 8px;
+	padding: 4px;
+	border-radius: 50%;
+	outline-offset: 4px;
+	transition: background-color .2s;
+}
+
+.filter-icon-button.filter {
+	color: #f7f8fa;
+	background-color: #00a884;
+}

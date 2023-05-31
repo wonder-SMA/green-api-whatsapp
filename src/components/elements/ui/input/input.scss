@@ -1,0 +1,41 @@
+.input {
+	position: relative;
+	width: 100%;
+	
+	.input__required {
+		position: absolute;
+		top: -10px;
+		left: -10px;
+		color: #dc2626;
+	}
+	
+	.input__field {
+		width: 100%;
+		height: 40px;
+		border: 1px solid transparent;
+		border-radius: 8px;
+		padding: 9px 12px;
+		font: inherit;
+		font-size: 15px;
+		font-weight: 400;
+		line-height: 20px;
+		color: inherit;
+		user-select: text;
+		transition: all 0.2s;
+		outline: none;
+		
+		&:focus {
+			border: 1px solid #78c7eb;
+		}
+		
+		&:invalid {
+			border: 1px solid #dc2626;
+		}
+	}
+}
+
+@media (min-width: 576px) {
+	.input {
+		width: 80%;
+	}
+}

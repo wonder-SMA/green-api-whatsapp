@@ -1,0 +1,15 @@
+.icon-layout {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: #54656f;
+	cursor: pointer;
+	outline-color: #78c7eb;
+	
+	svg {
+		width: 100%;
+		height: 100%;
+	}
+}

@@ -1,0 +1,23 @@
+.button {
+	max-height: 2.5em;
+	padding: 0.5em 1em;
+	border: 1px solid transparent;
+	border-radius: 1em;
+	font-size: 14px;
+	font-weight: normal;
+	font-family: inherit;
+	color: #008069;
+	background-color: transparent;
+	cursor: pointer;
+	user-select: none;
+	//touch-action: manipulation;
+	transition: border-color .2s;
+	
+	&:active {
+		border: 1px solid #008069;
+	}
+	
+	&:focus-visible {
+		outline-color: #78c7eb;
+	}
+}

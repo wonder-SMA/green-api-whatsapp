@@ -75,15 +75,15 @@ export const userReducer = (state = initialState, action: UserActions): UserStat
 
     case UserActionTypes.SET_MESSAGE_STATUS: {
       const chatId = action.payload.chatId;
-      const chatHistoryMap = state.chats.get(chatId)?.chatHistoryMap as TChatHistory['chatHistoryMap'];
-      const message = chatHistoryMap.get(action.payload.idMessage);
+      const chatHistoryMap = state.chats.get(chatId)?.chatHistoryMap;
+      const message = chatHistoryMap?.get(action.payload.idMessage);
 
       if (message?.idMessage) {
         const chatHistoryList = state.chats.get(chatId)?.chatHistoryList as TChatHistory['chatHistoryList'];
 
         // Обновляем статус внутри объекта сообщения и записываем сообщение в историю чата
         const updatedMessage = { ...message, statusMessage: action.payload.status };
-        const updatedChatHistoryMap = chatHistoryMap.set(action.payload.idMessage, updatedMessage);
+        const updatedChatHistoryMap = chatHistoryMap?.set(action.payload.idMessage, updatedMessage) as TChatHistory['chatHistoryMap'];
 
         // Добавляем чат в Map объект чатов
         const updatedChats = state.chats.set(action.payload.chatId, {

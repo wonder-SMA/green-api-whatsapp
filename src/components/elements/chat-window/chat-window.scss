@@ -2,7 +2,7 @@
 	position: relative;
 	top: 19px;
 	width: calc(100% - 38px);
-	//max-width: 1600px;
+	max-width: 1600px;
 	height: calc(100% - 38px);
 	margin: 0 auto;
 	display: flex;
@@ -19,5 +19,11 @@
 		height: 0;
 		content: "";
 		border-top: 6px solid #25d366;
+	}
+}
+
+@media screen and (max-width: 680px) {
+	.chat-window {
+		overflow-x: auto;
 	}
 }

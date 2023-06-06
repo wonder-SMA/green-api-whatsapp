@@ -61,6 +61,7 @@ const ConversationFooter: FC<ConversationFooterProps> = ({ placeholder, onSend }
         input.style.overflowY = 'auto';
       }
     }
+    //TODO Сделать уменьшение футера и инпута при сокращении кол-ва строк
   }, [inputValue, footerRef.current, inputRef.current]);
 
   return (

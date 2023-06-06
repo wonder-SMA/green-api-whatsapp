@@ -177,7 +177,7 @@ export const handleMsgReceivedNotifications = () => {
         } else if (notification.body.typeWebhook === 'outgoingMessageStatus') {
 
           const outgoingMsgReceived = notification.body as TOutgoingMessageStatus;
-
+          
           dispatch({
             type: UserActionTypes.SET_MESSAGE_STATUS,
             payload: {

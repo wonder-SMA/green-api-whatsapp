@@ -1,4 +1,5 @@
 import { Map, List } from 'immutable';
+import { TContactInfo } from './contact-info';
 
 export type TChatId = `
   ${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}@c.us
@@ -34,14 +35,17 @@ export type TOutgoingMessage = {
 } & BaseMessage;
 
 export type TMessage = IncomingMessage | TOutgoingMessage;
-export type TChatHistory = {
+
+export type TChatInfo = {
+  contactInfo: TContactInfo;
   chatHistoryList: List<TMessage['idMessage']>;
   chatHistoryMap: Map<BaseMessage['idMessage'], TMessage>;
 }
 
 export type TChat = {
   chatId: TChatId;
-  chatHistory: TChatHistory;
+  contactInfo: TContactInfo;
+  chatHistory: TMessage[];
 }
 
-export type TChats = Map<TChatId, TChatHistory>;
+export type TChats = Map<TChatId, TChatInfo>;

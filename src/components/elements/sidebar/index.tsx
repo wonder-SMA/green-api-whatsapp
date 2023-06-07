@@ -1,10 +1,9 @@
-import { FC, PropsWithChildren, useState, useCallback } from 'react';
+import { FC, useState, useCallback, useMemo } from 'react';
 import { getDateTime } from '../../../helpers/get-date-time';
 import { getPhoneNumber } from '../../../helpers/get-phone-number';
 import { useActions } from '../../../hooks/use-actions';
 import { useTypedSelector } from '../../../hooks/use-typed-selector';
 import { exitFromAccount } from '../../../store/user/actions';
-import { UserState } from '../../../store/user/types';
 import { TContactInfo } from '../../../types/contact-info';
 import { TChatId } from '../../../types/chat';
 import ChatItem from '../chat-item';
@@ -16,20 +15,25 @@ import ExitIcon from '../ui/icons/exit-icon';
 import Search from '../ui/search';
 import './sidebar.scss';
 
-type SidebarProps = {
-  userInfo: UserState['userInfo'];
-  contactInfo: UserState['contactInfo'];
-  chats: UserState['chats'];
-}
-
-const Sidebar: FC<PropsWithChildren<SidebarProps>> = ({ userInfo, contactInfo, chats }) => {
+const Sidebar: FC = () => {
   const [isFilter, setIsFilter] = useState(false);
-  const { currentChat } = useTypedSelector(state => state.userReducer);
-  const { setCurrentChat, exitFromAccount } = useActions();
+  const { chats, currentChat, userInfo } = useTypedSelector(state => state.userReducer);
+  const { setNewChat, setCurrentChat, exitFromAccount } = useActions();
+
+  const contactInfo = useMemo(() => {
+    if (currentChat) {
+      return chats.get(currentChat)?.contactInfo;
+    }
+  }, [chats, currentChat]);
 
   // Возвращает функцию с замыканием на индекс чата
   const onClickOnChat = useCallback((chatId: TChatId) => {
     return () => setCurrentChat(chatId);
+  }, []);
+
+  // Обработчик создания нового чата
+  const onClickOnNewChat = useCallback(() => {
+    setNewChat(true);
   }, []);
 
   // Обработчик фильтрации сообщений
@@ -45,7 +49,7 @@ const Sidebar: FC<PropsWithChildren<SidebarProps>> = ({ userInfo, contactInfo, c
   return (
     <div className="sidebar">
       <Header title="Профиль" avatar={'avatar' in userInfo ? userInfo.avatar : ''}>
-        <ChatIcon className="icon-btn" title="Новый чат" />
+        <ChatIcon className="icon-btn" title="Новый чат" onClick={onClickOnNewChat} />
         <ExitIcon className="icon-btn" title="Выйти" onClick={onExit} />
       </Header>
       <div className="sidebar__chat">
@@ -74,29 +78,31 @@ const Sidebar: FC<PropsWithChildren<SidebarProps>> = ({ userInfo, contactInfo, c
                   <ChatItem
                     className={currentChat === chatId ? 'current-chat' : ''}
                     key={chatId}
-                    avatar={(contactInfo as TContactInfo).avatar}
-                    name={(contactInfo as TContactInfo).name || getPhoneNumber((contactInfo as TContactInfo).chatId)}
+                    avatar={chats.get(chatId)?.contactInfo.avatar || ''}
+                    name={chats.get(chatId)?.contactInfo?.name || getPhoneNumber(chatId)}
                     lastMessage={lastMessage?.textMessage || ''}
-                    time={lastMessage ? getDateTime(lastMessage?.timestamp) : ''}
+                    time={lastMessage?.timestamp ? getDateTime(lastMessage.timestamp) : ''}
                     onClick={onClickOnChat(chatId as TChatId)}
                     isRead={true}
                   />
                 );
               }
             })
-            : <div className="sidebar__chat-list-empty-wrapper">
-              <div className="sidebar__chat-list-empty-content">
-                {isFilter ? 'Нет непрочитанных чатов' : 'Нет чатов'}
-              </div>
-              {isFilter &&
-                <Button onClick={onFilter}>Сбросить фильтр</Button>
-              }
+          :
+          <div className="sidebar__chat-list-empty-wrapper">
+            <div className="sidebar__chat-list-empty-content">
+              {isFilter ? 'Нет непрочитанных чатов' : 'Нет чатов'}
             </div>
+            {isFilter &&
+              <Button onClick={onFilter}>Сбросить фильтр</Button>
+            }
+          </div>
           }
         </div>
       </div>
     </div>
   );
-};
+}
+  ;
 
-export default Sidebar;
+  export default Sidebar;

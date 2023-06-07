@@ -16,7 +16,7 @@ import { TAppDispatch, TRootState } from '../index';
 import { SetCurrentChatAction, UserActionTypes } from './types';
 
 export const setAuth = (credentials: TCredentials) => {
-  return async (dispatch: TAppDispatch) => {
+  return async (dispatch: TAppDispatch, getState: () => TRootState) => {
     try {
       // Авторизация и сохранение состояния авторизации с данными в стор
       const stateInstance = await UserService.getStateInstance(credentials);
@@ -36,6 +36,9 @@ export const setAuth = (credentials: TCredentials) => {
           const phoneNumber = getPhoneNumber(settings.wid);
           const userInfo = await UserService.getContactInfo({ ...credentials, phoneNumber });
           dispatch({ type: UserActionTypes.SET_USER_INFO, payload: userInfo });
+
+          // Запуск обработки очереди входящих уведомлений
+          await handleMsgReceivedNotifications()(dispatch, getState);
 
           break;
 
@@ -65,6 +68,10 @@ export const setAuth = (credentials: TCredentials) => {
   };
 };
 
+export const setNewChat = (payload: boolean) => {
+  return { type: UserActionTypes.SET_NEW_CHAT, payload };
+};
+
 export const createChat = (phoneNumber: string) => {
   return async (dispatch: TAppDispatch, getState: () => TRootState) => {
     try {
@@ -74,19 +81,27 @@ export const createChat = (phoneNumber: string) => {
       const existsWhatsapp = await UserService.checkWhatsapp({ ...credentials, phoneNumber });
 
       if (existsWhatsapp) {
-        // Запрос информации о получателе и сохранение ее в стор
+        // Запрос информации о получателе
         const contactInfo = await UserService.getContactInfo({ ...credentials, phoneNumber });
-        dispatch({ type: UserActionTypes.SET_CONTACT_INFO, payload: contactInfo });
 
-        // Запрос истории чата между отправителем и получателя и сохранение ее в стор
+        // Запрос истории чата между отправителем и получателя
         const chatHistory = await UserService.getChatHistory({ ...credentials, phoneNumber });
+
+        // Сохранение в стор информации о получателе и истории чата
         dispatch({
           type: UserActionTypes.ADD_CHAT,
-          payload: { chatId: contactInfo.chatId, chatHistory: chatHistory.slice(0).reverse() },
+          payload: {
+            chatId: contactInfo.chatId,
+            contactInfo,
+            chatHistory: chatHistory.slice(0).reverse(),
+          },
         });
 
-        // Запуск обработки очереди входящих уведомлений после подгрузки истории сообщений чата
-        await handleMsgReceivedNotifications()(dispatch, getState);
+        // Закрытие модального окна нового чата
+        dispatch({
+          type: UserActionTypes.SET_NEW_CHAT,
+          payload: false,
+        });
 
       } else {
         toast.error('Пользователь не зарегистрирован в WhatsApp');
@@ -177,7 +192,7 @@ export const handleMsgReceivedNotifications = () => {
         } else if (notification.body.typeWebhook === 'outgoingMessageStatus') {
 
           const outgoingMsgReceived = notification.body as TOutgoingMessageStatus;
-          
+
           dispatch({
             type: UserActionTypes.SET_MESSAGE_STATUS,
             payload: {

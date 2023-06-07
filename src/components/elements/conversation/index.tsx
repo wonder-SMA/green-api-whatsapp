@@ -1,11 +1,10 @@
-import React, { FC, useCallback, useLayoutEffect, useRef } from 'react';
+import React, { FC, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { compareDatesSame } from '../../../helpers/compare-dates-same';
 import { getDateTime } from '../../../helpers/get-date-time';
 import { getPhoneNumber } from '../../../helpers/get-phone-number';
 import { useActions } from '../../../hooks/use-actions';
 import { useTypedSelector } from '../../../hooks/use-typed-selector';
-import { UserState } from '../../../store/user/types';
-import { TChatHistory, TMessage } from '../../../types/chat';
+import { TChatInfo, TMessage } from '../../../types/chat';
 import { TContactInfo } from '../../../types/contact-info';
 import ConversationFooter from '../conversation-footer';
 import Header from '../header';
@@ -14,21 +13,23 @@ import Message from '../ui/message';
 import TimeMessage from '../ui/time-message';
 import './conversation.scss';
 
-type ConversationProps = {
-  contactInfo: UserState['contactInfo'];
-}
-
-const Conversation: FC<ConversationProps> = ({ contactInfo }) => {
+const Conversation: FC = () => {
     const messagesRef = useRef<HTMLDivElement | null>(null);
     const { currentChat, chats } = useTypedSelector(state => state.userReducer);
     const { sendMessage, exitFromCurrentChat } = useActions();
+
+    const contactInfo = useMemo(() => {
+      if (currentChat) {
+        return chats.get(currentChat)?.contactInfo;
+      }
+    }, [chats, currentChat]);
 
     // Прокручиваем чат вниз перед отображением
     useLayoutEffect(() => {
       if (messagesRef.current) {
         (messagesRef.current as HTMLDivElement).scrollTop = messagesRef.current.scrollHeight;
       }
-    }, [chats]);
+    }, [currentChat, chats]);
 
     // Обработчик отправки сообщений
     const onSend = useCallback((message: string) => {
@@ -51,7 +52,7 @@ const Conversation: FC<ConversationProps> = ({ contactInfo }) => {
         <div className="conversation__background" />
         <div className="conversation__messages" ref={messagesRef}>
           {currentChat && chats.get(currentChat)?.chatHistoryList.map((messageId, idx, list) => {
-            const chatHistoryMap = (chats.get(currentChat) as TChatHistory).chatHistoryMap;
+            const chatHistoryMap = (chats.get(currentChat) as TChatInfo).chatHistoryMap;
 
             // Текущее сообщение из списка
             const message = chatHistoryMap.get(messageId) as TMessage;

@@ -7,18 +7,13 @@ import { useTypedSelector } from './hooks/use-typed-selector';
 import './styles/app.scss';
 
 const App: FC = () => {
-  const { isAuth, userInfo, contactInfo } = useTypedSelector(state => state.userReducer);
+  const { isAuth, isNewChat } = useTypedSelector(state => state.userReducer);
 
   return (
     <div className="app">
-      <ChatWindow
-        userInfo={userInfo}
-        contactInfo={contactInfo}
-      />
+      <ChatWindow />
       {isAuth
-        ? (!Object.keys(contactInfo).length
-          && <NewChatModal />
-        )
+        ? (isNewChat && <NewChatModal />)
         : <LoginModal />
       }
       <ToastContainer

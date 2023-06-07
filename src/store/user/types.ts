@@ -1,4 +1,4 @@
-import { TChats } from '../../types/chat';
+import { TChat, TChats } from '../../types/chat';
 import { TSettings } from '../../types/settings';
 import { TCredentials } from '../../types/credentials';
 import { TContactInfo } from '../../types/contact-info';
@@ -12,9 +12,9 @@ export type UserState = {
     id: string | null;
     token: string | null;
   };
+  isNewChat: boolean;
   userSettings: TSettings | {};
   userInfo: TContactInfo | {};
-  contactInfo: TContactInfo | {};
   chats: TChats;
   currentChat: TChatId | null;
 }
@@ -22,6 +22,7 @@ export type UserState = {
 export enum UserActionTypes {
   SET_AUTH = 'SET_AUTH',
   SET_CREDENTIALS = 'SET_CREDENTIALS',
+  SET_NEW_CHAT = 'SET_NEW_CHAT',
   SET_USER_SETTINGS = 'SET_USER_SETTINGS',
   SET_USER_INFO = 'SET_USER_INFO',
   SET_CONTACT_INFO = 'SET_CONTACT_INFO',
@@ -45,6 +46,11 @@ export type SetCredentialsAction = {
   payload: TCredentials;
 }
 
+export type SetNewChatAction = {
+  type: UserActionTypes.SET_NEW_CHAT;
+  payload: boolean;
+}
+
 export type SetUserSettingsAction = {
   type: UserActionTypes.SET_USER_SETTINGS;
   payload: TSettings;
@@ -55,17 +61,9 @@ export type SetUserInfoAction = {
   payload: TContactInfo;
 }
 
-export type SetContactInfoAction = {
-  type: UserActionTypes.SET_CONTACT_INFO;
-  payload: TContactInfo;
-}
-
 export type AddChatAction = {
   type: UserActionTypes.ADD_CHAT;
-  payload: {
-    chatId: TChatId;
-    chatHistory: TMessage[];
-  };
+  payload: TChat;
 }
 
 export type SetCurrentChatAction = {
@@ -100,9 +98,9 @@ export type ExitFromAccountAction = {
 export type UserActions =
   SetAuthAction
   | SetCredentialsAction
+  | SetNewChatAction
   | SetUserSettingsAction
   | SetUserInfoAction
-  | SetContactInfoAction
   | AddChatAction
   | SetCurrentChatAction
   | AddMessageAction

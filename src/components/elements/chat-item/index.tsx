@@ -1,5 +1,5 @@
-import classNames from 'classnames';
 import { FC } from 'react';
+import classNames from 'classnames';
 import UserIcon from '../ui/icons/user-icon';
 import './chat-item.scss';
 

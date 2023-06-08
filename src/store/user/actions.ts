@@ -1,8 +1,9 @@
+import { List, Map, Set } from 'immutable';
 import { toast } from 'react-toastify';
 import { getPhoneNumber } from '../../helpers/get-phone-number';
 import { timer } from '../../helpers/timer';
 import { UserService } from '../../services/user.service';
-import { TChatId } from '../../types/chat';
+import { TChatId, TMessageReadStatus } from '../../types/chat';
 import { TCredentials } from '../../types/credentials';
 import {
   TTextMessageData,
@@ -28,7 +29,7 @@ export const setAuth = (credentials: TCredentials) => {
           dispatch({ type: UserActionTypes.SET_AUTH, payload: { isAuth: true } });
           dispatch({ type: UserActionTypes.SET_CREDENTIALS, payload: credentials });
 
-          // Запрос настроек отправителя и сохранение ее в стор
+          // Запрос настроек отправителя и сохранение их в стор
           const settings = await UserService.getSettings(credentials);
           dispatch({ type: UserActionTypes.SET_USER_SETTINGS, payload: settings });
 
@@ -87,13 +88,20 @@ export const createChat = (phoneNumber: string) => {
         // Запрос истории чата между отправителем и получателя
         const chatHistory = await UserService.getChatHistory({ ...credentials, phoneNumber });
 
-        // Сохранение в стор информации о получателе и истории чата
+        const reversedChatHistory = chatHistory.slice(0).reverse();
+
+        // Создаем список и Map объект истории чата
+        const chatHistoryList = List(reversedChatHistory.map(msg => msg.idMessage));
+        const chatHistoryMap = Map(reversedChatHistory.map(msg => [msg.idMessage, msg]));
+
+        // Сохранение в стор информации о чате
         dispatch({
           type: UserActionTypes.ADD_CHAT,
           payload: {
-            chatId: contactInfo.chatId,
             contactInfo,
-            chatHistory: chatHistory.slice(0).reverse(),
+            chatHistoryList,
+            chatHistoryMap,
+            unreadMessages: Set(),
           },
         });
 
@@ -116,7 +124,7 @@ export const sendMessage = (message: string) => {
   return async (dispatch: TAppDispatch, getState: () => TRootState) => {
     try {
       const credentials = getState().userReducer.credentials as TCredentials;
-      const chatId = getState().userReducer.currentChat as TChatId;
+      const chatId = getState().userReducer.currentChatId as TChatId;
 
       // Запрос на отправку сообщения
       await UserService.sendMessage({
@@ -124,6 +132,24 @@ export const sendMessage = (message: string) => {
         chatId,
         message,
       });
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+  };
+};
+
+export const setReadMessage = (payload: TMessageReadStatus) => {
+  return async (dispatch: TAppDispatch, getState: () => TRootState) => {
+    try {
+      const credentials = getState().userReducer.credentials as TCredentials;
+
+      // Запрос, чтобы отметить сообщение прочитанным
+      const isRead = await UserService.readChat({ ...credentials, ...payload });
+
+      if (isRead) {
+        dispatch({ type: UserActionTypes.SET_READ_MESSAGE, payload });
+      }
+
     } catch (error) {
       toast.error((error as Error).message);
     }
@@ -197,7 +223,7 @@ export const handleMsgReceivedNotifications = () => {
             type: UserActionTypes.SET_MESSAGE_STATUS,
             payload: {
               chatId: outgoingMsgReceived.chatId,
-              idMessage: outgoingMsgReceived.idMessage,
+              messageId: outgoingMsgReceived.idMessage,
               status: outgoingMsgReceived.status,
             },
           });
@@ -216,6 +242,14 @@ export const handleMsgReceivedNotifications = () => {
               textMessage: (incomingMsgReceived.messageData as TTextMessageData).textMessageData.textMessage,
               senderId: incomingMsgReceived.senderData.sender,
               senderName: incomingMsgReceived.senderData.senderName,
+            },
+          });
+
+          // Добавляем сообщение в коллекцию непрочитанных сообщений чата
+          dispatch({
+            type: UserActionTypes.SET_UNREAD_MESSAGE, payload: {
+              chatId: incomingMsgReceived.senderData.chatId,
+              messageId: incomingMsgReceived.idMessage,
             },
           });
         }

@@ -8,6 +8,7 @@ import { TSettings } from '../types/settings';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const UserService = {
+  // Проверка авторизации пользователя
   async getStateInstance({ id, token }: TCredentials): Promise<string> {
     const response = await fetch(API_BASE_URL + `/waInstance${id}/getStateInstance/${token}`);
 
@@ -19,6 +20,7 @@ export const UserService = {
     }
   },
 
+  // Проверка, что номер для чата зарегистрирован в WhatsApp
   async checkWhatsapp({ id, token, phoneNumber }: TCredentialsWithPhoneNumber): Promise<boolean> {
     const response = await fetch(API_BASE_URL + `/waInstance${id}/checkWhatsapp/${token}`, {
       method: 'POST',
@@ -36,6 +38,7 @@ export const UserService = {
     }
   },
 
+  // Получение настроек пользователя
   async getSettings({ id, token }: TCredentials): Promise<TSettings> {
     const response = await fetch(API_BASE_URL + `/waInstance${id}/getSettings/${token}`);
 
@@ -46,6 +49,7 @@ export const UserService = {
     }
   },
 
+  // Получение информации о контакте
   async getContactInfo({ id, token, phoneNumber }: TCredentialsWithPhoneNumber): Promise<TContactInfo> {
     const chatId = getChatId(phoneNumber);
     const response = await fetch(API_BASE_URL + `/waInstance${id}/getContactInfo/${token}`, {
@@ -63,6 +67,7 @@ export const UserService = {
     }
   },
 
+  // Получение истории сообщений
   async getChatHistory({ id, token, phoneNumber }: TCredentialsWithPhoneNumber): Promise<TMessage[]> {
     const chatId = getChatId(phoneNumber);
     const response = await fetch(API_BASE_URL + `/waInstance${id}/getChatHistory/${token}`, {
@@ -80,6 +85,7 @@ export const UserService = {
     }
   },
 
+  // Отправка сообщения
   async sendMessage({
                       id,
                       token,
@@ -102,6 +108,28 @@ export const UserService = {
     }
   },
 
+  async readChat({
+                   id,
+                   token,
+                   chatId,
+                   messageId,
+                 }: TCredentials & { chatId: TChatId, messageId: TMessage['idMessage'] }): Promise<boolean> {
+    const response = await fetch(API_BASE_URL + `/waInstance${id}/readChat/${token}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ chatId, idMessage: messageId }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`${response.status}. ${response.statusText}`);
+    } else {
+      return await response.json();
+    }
+  },
+
+  // Запрос на чтение входящего уведомления
   async receiveNotification({ id, token }: TCredentials): Promise<{ receiptId: number, body: TReceivedNotification }> {
     const response = await fetch(API_BASE_URL + `/waInstance${id}/receiveNotification/${token}`);
 
@@ -112,6 +140,7 @@ export const UserService = {
     }
   },
 
+  // Запрос на удаление входящего уведомления
   async deleteNotification({
                              id,
                              token,
@@ -129,6 +158,7 @@ export const UserService = {
     }
   },
 
+  // Запрос на выход пользователя
   async logout({ id, token }: TCredentials): Promise<boolean> {
     const response = await fetch(API_BASE_URL + `/waInstance${id}/logout/${token}`);
 

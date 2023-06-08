@@ -10,7 +10,7 @@ type ChatItemProps = {
   lastMessage: string;
   time: string;
   onClick: () => void;
-  isRead: boolean;
+  isUnread: boolean;
 }
 
 const ChatItem: FC<ChatItemProps> = ({
@@ -20,17 +20,13 @@ const ChatItem: FC<ChatItemProps> = ({
                                        lastMessage,
                                        time,
                                        onClick,
-                                       isRead,
+                                       isUnread,
                                      }) => {
 
   const chatItemClass = classNames({
     'chat-item': true,
+    unread: isUnread,
     [className]: className,
-  });
-
-  const chatItemFrameClass = classNames({
-    'chat-item__frame': true,
-    unread: !isRead,
   });
 
   return (
@@ -42,7 +38,7 @@ const ChatItem: FC<ChatItemProps> = ({
           title="Профиль"
         />
       </div>
-      <div className={chatItemFrameClass}>
+      <div className="chat-item__frame">
         <div className="chat-item__frame-primary">
           <div className="chat-item__title">{name}</div>
           <div className="chat-item__time">{time}</div>

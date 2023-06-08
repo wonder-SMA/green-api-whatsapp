@@ -1,16 +1,47 @@
-import { FC, PropsWithChildren, ReactNode } from 'react';
+import { FC, PropsWithChildren, ReactNode, useEffect, useRef } from 'react';
 import classNames from 'classnames';
+import { TMessage } from '../../../../types/chat';
 import CheckIcon from '../icons/check-icon';
 import './message.scss';
 
 type MessageProps = {
   children: ReactNode;
+  messageId: TMessage['idMessage'];
   time: string;
   isMine: boolean;
   status: 'pending' | 'sent' | 'delivered' | 'read' | 'failed' | 'noAccount' | 'notInGroup' | null;
+  isUnread: boolean;
+  onRead: (messageId: TMessage['idMessage']) => void;
 }
 
-const Message: FC<PropsWithChildren<MessageProps>> = ({ children, time, isMine, status }) => {
+const Message: FC<PropsWithChildren<MessageProps>> = ({
+                                                        children,
+                                                        messageId,
+                                                        time,
+                                                        isMine,
+                                                        status,
+                                                        isUnread,
+                                                        onRead,
+                                                      }) => {
+  const messageRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (isUnread && messageRef.current) {
+      const observer = new IntersectionObserver(
+        ([entry], observer) => {
+          // проверяем что непрочитанное сообщение находится в поле зрения
+          if (entry.isIntersecting) {
+            // перестаем его отслеживать
+            observer.unobserve(entry.target);
+            // Помечаем как прочитанное
+            onRead(messageId);
+          }
+        },
+        { threshold: 0.9 },
+      );
+      observer.observe(messageRef.current);
+    }
+  }, []);
 
   const messageClass = classNames({
     message: true,
@@ -23,7 +54,7 @@ const Message: FC<PropsWithChildren<MessageProps>> = ({ children, time, isMine, 
   });
 
   return (
-    <div className={messageClass}>
+    <div className={messageClass} ref={messageRef}>
       <div className="message__body-wrapper">
         <div className="message__body-content">
           {children}

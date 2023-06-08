@@ -1,4 +1,4 @@
-import { TChat, TChats } from '../../types/chat';
+import { TChat, TChats, TMessageReadStatus } from '../../types/chat';
 import { TSettings } from '../../types/settings';
 import { TCredentials } from '../../types/credentials';
 import { TContactInfo } from '../../types/contact-info';
@@ -16,7 +16,7 @@ export type UserState = {
   userSettings: TSettings | {};
   userInfo: TContactInfo | {};
   chats: TChats;
-  currentChat: TChatId | null;
+  currentChatId: TChatId | null;
 }
 
 export enum UserActionTypes {
@@ -28,6 +28,8 @@ export enum UserActionTypes {
   SET_CONTACT_INFO = 'SET_CONTACT_INFO',
   ADD_CHAT = 'ADD_CHAT',
   SET_CURRENT_CHAT = 'SET_CURRENT_CHAT',
+  SET_UNREAD_MESSAGE = 'SET_UNREAD_MESSAGE',
+  SET_READ_MESSAGE = 'SET_READ_MESSAGE',
   ADD_MESSAGE = 'ADD_MESSAGE',
   SET_MESSAGE_STATUS = 'SET_MESSAGE_STATUS',
   EXIT_FROM_CURRENT_CHAT = 'EXIT_FROM_CURRENT_CHAT',
@@ -71,6 +73,16 @@ export type SetCurrentChatAction = {
   payload: TChatId | null;
 }
 
+export type SetUnreadMessageAction = {
+  type: UserActionTypes.SET_UNREAD_MESSAGE;
+  payload: TMessageReadStatus;
+}
+
+export type SetReadMessageAction = {
+  type: UserActionTypes.SET_READ_MESSAGE;
+  payload: TMessageReadStatus;
+}
+
 export type AddMessageAction = {
   type: UserActionTypes.ADD_MESSAGE;
   payload: TMessage;
@@ -80,7 +92,7 @@ export type SetMessageStatusAction = {
   type: UserActionTypes.SET_MESSAGE_STATUS;
   payload: {
     chatId: TChatId;
-    idMessage: string;
+    messageId: string;
     status: TOutgoingMessage['statusMessage'];
   };
 }
@@ -103,6 +115,8 @@ export type UserActions =
   | SetUserInfoAction
   | AddChatAction
   | SetCurrentChatAction
+  | SetUnreadMessageAction
+  | SetReadMessageAction
   | AddMessageAction
   | SetMessageStatusAction
   | ExitFromCurrentChatAction

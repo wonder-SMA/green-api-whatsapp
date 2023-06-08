@@ -1,4 +1,4 @@
-import { Map, List } from 'immutable';
+import { Map, Set, List } from 'immutable';
 import { TContactInfo } from './contact-info';
 
 export type TChatId = `
@@ -36,16 +36,16 @@ export type TOutgoingMessage = {
 
 export type TMessage = IncomingMessage | TOutgoingMessage;
 
-export type TChatInfo = {
-  contactInfo: TContactInfo;
-  chatHistoryList: List<TMessage['idMessage']>;
-  chatHistoryMap: Map<BaseMessage['idMessage'], TMessage>;
+export type TMessageReadStatus = {
+  chatId: TChatId;
+  messageId: TMessage['idMessage'];
 }
 
 export type TChat = {
-  chatId: TChatId;
   contactInfo: TContactInfo;
-  chatHistory: TMessage[];
+  chatHistoryList: List<TMessage['idMessage']>;
+  chatHistoryMap: Map<TMessage['idMessage'], TMessage>;
+  unreadMessages: Set<TMessage['idMessage']>;
 }
 
-export type TChats = Map<TChatId, TChatInfo>;
+export type TChats = Map<TChatId, TChat>;

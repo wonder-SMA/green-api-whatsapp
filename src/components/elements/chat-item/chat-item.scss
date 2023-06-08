@@ -92,6 +92,15 @@
 	background-color: #f0f2f5;
 }
 
-.chat-item__frame.unread {
-	font-weight: 500;
+.chat-item.unread {
+	.chat-item__frame {
+		font-weight: 500;
+	}
+	
+	.chat-item__frame-primary {
+		.chat-item__time {
+			font-weight: 600;
+			color: #1fa855;
+		}
+	}
 }

@@ -1,5 +1,4 @@
-import { List, Map } from 'immutable';
-import { TChatInfo } from '../../types/chat';
+import { Map } from 'immutable';
 import { UserActions, UserActionTypes, UserState } from './types';
 
 const initialState: UserState = {
@@ -12,7 +11,7 @@ const initialState: UserState = {
   userSettings: {},
   userInfo: {},
   chats: Map(),
-  currentChat: null,
+  currentChatId: null,
 };
 
 export const userReducer = (state = initialState, action: UserActions): UserState => {
@@ -34,39 +33,64 @@ export const userReducer = (state = initialState, action: UserActions): UserStat
       return { ...state, userInfo: { ...action.payload } };
 
     case UserActionTypes.SET_CURRENT_CHAT:
-      return { ...state, currentChat: action.payload };
+      return { ...state, currentChatId: action.payload };
+
+    case UserActionTypes.SET_UNREAD_MESSAGE:
+      const chat = state.chats.get(action.payload.chatId);
+
+      if (chat) {
+        // Добавляем сообщение в коллекцию непрочитанных сообщение чата
+        const updatedUnreadMessages = chat.unreadMessages.add(action.payload.messageId);
+
+        const updatedChats = state.chats.set(action.payload.chatId, {
+          ...chat,
+          unreadMessages: updatedUnreadMessages,
+        });
+
+        return { ...state, chats: updatedChats };
+      }
+
+      return state;
+
+    case UserActionTypes.SET_READ_MESSAGE: {
+      const chat = state.chats.get(action.payload.chatId);
+
+      if (chat) {
+        // Удаляем сообщение из коллекции непрочитанных сообщение чата
+        const updatedUnreadMessages = chat.unreadMessages.delete(action.payload.messageId);
+
+        const updatedChats = state.chats.set(action.payload.chatId, {
+          ...chat,
+          unreadMessages: updatedUnreadMessages,
+        });
+
+        return { ...state, chats: updatedChats };
+      }
+
+      return state;
+    }
 
     case UserActionTypes.ADD_CHAT: {
-      // Создаем список и Map объект истории чата
-      const chatHistoryList = List(action.payload.chatHistory.map(msg => msg.idMessage));
-      const chatHistoryMap = Map(action.payload.chatHistory.map(msg => [msg.idMessage, msg]));
-
       // Добавляем чат в Map объект чатов
-      const updatedChats = state.chats.set(action.payload.chatId, {
-        contactInfo: action.payload.contactInfo,
-        chatHistoryList,
-        chatHistoryMap,
-      });
+      const updatedChats = state.chats.set(action.payload.contactInfo.chatId, { ...action.payload });
 
       return { ...state, chats: updatedChats };
     }
 
     case UserActionTypes.ADD_MESSAGE: {
-      const chatId = action.payload.chatId;
-      const chatHistoryList = state.chats.get(chatId)?.chatHistoryList;
+      const chat = state.chats.get(action.payload.chatId);
 
-      if (chatHistoryList?.size) {
-        const chatHistoryMap = state.chats.get(chatId)?.chatHistoryMap as TChatInfo['chatHistoryMap'];
+      if (chat) {
+        const chatHistoryList = chat.chatHistoryList;
+        const chatHistoryMap = chat.chatHistoryMap;
 
         // Добавляем сообщение в список и Map объект истории чата
         const updatedChatHistoryList = chatHistoryList?.push(action.payload.idMessage);
         const updatedChatHistoryMap = chatHistoryMap?.set(action.payload.idMessage, action.payload);
 
-        const contactInfo = state.chats.get(chatId)?.contactInfo as TChatInfo['contactInfo'];
-
         // Добавляем чат в Map объект чатов
         const updatedChats = state.chats.set(action.payload.chatId, {
-          contactInfo,
+          ...chat,
           chatHistoryList: updatedChatHistoryList,
           chatHistoryMap: updatedChatHistoryMap,
         });
@@ -78,23 +102,18 @@ export const userReducer = (state = initialState, action: UserActions): UserStat
     }
 
     case UserActionTypes.SET_MESSAGE_STATUS: {
-      const chatId = action.payload.chatId;
-      const chatHistoryMap = state.chats.get(chatId)?.chatHistoryMap;
-      const message = chatHistoryMap?.get(action.payload.idMessage);
+      const chat = state.chats.get(action.payload.chatId);
+      const chatHistoryMap = chat?.chatHistoryMap;
+      const message = chatHistoryMap?.get(action.payload.messageId);
 
-      if (message?.idMessage) {
-        const chatHistoryList = state.chats.get(chatId)?.chatHistoryList as TChatInfo['chatHistoryList'];
-
+      if (chat && typeof chatHistoryMap === 'object' && message?.idMessage) {
         // Обновляем статус внутри объекта сообщения и записываем сообщение в историю чата
         const updatedMessage = { ...message, statusMessage: action.payload.status };
-        const updatedChatHistoryMap = chatHistoryMap?.set(action.payload.idMessage, updatedMessage) as TChatInfo['chatHistoryMap'];
-
-        const contactInfo = state.chats.get(chatId)?.contactInfo as TChatInfo['contactInfo'];
+        const updatedChatHistoryMap = chatHistoryMap.set(action.payload.messageId, updatedMessage);
 
         // Добавляем чат в Map объект чатов
         const updatedChats = state.chats.set(action.payload.chatId, {
-          contactInfo,
-          chatHistoryList,
+          ...chat,
           chatHistoryMap: updatedChatHistoryMap,
         });
 
@@ -105,7 +124,7 @@ export const userReducer = (state = initialState, action: UserActions): UserStat
     }
 
     case UserActionTypes.EXIT_FROM_CURRENT_CHAT:
-      return { ...state, currentChat: null };
+      return { ...state, currentChatId: null };
 
     case UserActionTypes.EXIT_FROM_ACCOUNT:
       return { ...initialState };

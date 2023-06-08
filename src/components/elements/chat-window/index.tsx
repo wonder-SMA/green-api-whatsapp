@@ -7,7 +7,7 @@ import Sidebar from '../sidebar';
 import './chat-window.scss';
 
 const ChatWindow: FC = () => {
-  const { currentChat } = useTypedSelector(state => state.userReducer);
+  const { currentChatId } = useTypedSelector(state => state.userReducer);
   const { exitFromCurrentChat } = useActions();
 
   // Обработчик нажатия Escape
@@ -20,7 +20,7 @@ const ChatWindow: FC = () => {
   return (
     <div className="chat-window" onKeyDown={keyDownHandler}>
       <Sidebar />
-      {currentChat
+      {currentChatId
         ? <Conversation />
         : <EmptyWindow />
       }

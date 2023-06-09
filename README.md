@@ -8,10 +8,11 @@
 - [Redux](https://redux.js.org)
 - [Sass](https://sass-lang.com)
 - [Immutable](https://immutable-js.com)
+- [react-toastify](https://fkhadra.github.io/react-toastify)
 
 ## Getting started
 
-1. Start dev server with hot reload at http://localhost:3000.
+1. Start dev server with hot reload at http://localhost:5173.
    ```bash
    npm run dev
    ```

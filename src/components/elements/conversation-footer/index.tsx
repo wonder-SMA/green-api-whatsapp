@@ -16,61 +16,71 @@ type ConversationFooterProps = {
 }
 
 const ConversationFooter: FC<ConversationFooterProps> = ({ placeholder, onSend }) => {
-  const [inputValue, setInputValue] = useState('');
+  const [textareaValue, setTextareaValue] = useState('');
   const footerRef = useRef<HTMLElement | null>(null);
-  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current?.focus();
+    if (textareaRef.current) {
+      textareaRef.current?.focus();
     }
   }, []);
 
   // Обработчик изменений в поле
   const changeHandler: ChangeEventHandler<HTMLTextAreaElement> = useCallback(event => {
-    setInputValue(event.target.value);
-  }, [inputValue]);
+    setTextareaValue(event.target.value);
+    changeHeight();
+  }, [textareaValue]);
 
   // Обработчик отправки сообщений
   const sendHandler = useCallback(() => {
-    if (inputValue) {
-      onSend(inputValue);
-      setInputValue('');
+    if (textareaValue.split('\n').join('')) {
+      onSend(textareaValue);
+      setTextareaValue('');
+    } else {
+      setTextareaValue('');
+      (textareaRef.current as HTMLTextAreaElement).style.minHeight = '56px';
+      (footerRef.current as HTMLElement).style.minHeight = '72px';
     }
-  }, [inputValue]);
+  }, [textareaValue]);
 
   // Обработчик нажатия клавиши Enter
   const onKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = useCallback(event => {
-    const footer = (footerRef.current as HTMLElement);
-    const footerRect = footer.getBoundingClientRect();
-    const input = (inputRef.current as HTMLTextAreaElement);
-    const inputRect = input.getBoundingClientRect();
-
     // Обработка отправки сообщения по нажатию Enter
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       sendHandler();
     }
+
     // Обработка скролла по нажатию Shift + Enter
     if (event.key === 'Enter' && event.shiftKey) {
-
-      if (footerRect.height <= 102) {
-        footer.style.minHeight = `${footerRect.height + 20}px`;
-        input.style.height = `${inputRect.height + 20}px`;
-      } else {
-        input.style.overflowY = 'auto';
-      }
+      changeHeight();
     }
-    //TODO Сделать уменьшение футера и инпута при сокращении кол-ва строк
-  }, [inputValue, footerRef.current, inputRef.current]);
+  }, [textareaValue]);
+
+  // Функция изменения высоты поля и футера в зависимости от заполненности
+  const changeHeight = useCallback(() => {
+    const textarea = (textareaRef.current as HTMLTextAreaElement);
+    textarea.style.minHeight = 'auto';
+    textarea.style.minHeight = `${Math.min(136, textarea.scrollHeight)}px`;
+    textarea.scrollHeight > 136 ? (textarea.style.overflowY = 'auto') : (textarea.style.overflowY = 'hidden');
+
+    const footer = (footerRef.current as HTMLElement);
+    footer.style.minHeight = 'auto';
+    footer.style.minHeight = `${Math.min(152, textarea.scrollHeight + 16)}px`;
+  }, [footerRef.current, textareaRef.current]);
 
   return (
-    <footer ref={footerRef} className="conversation-footer" onKeyDown={onKeyDown}>
+    <footer
+      ref={footerRef}
+      className="conversation-footer"
+      onKeyDown={onKeyDown}
+    >
       <div />
       <textarea
-        ref={inputRef}
+        ref={textareaRef}
         className="conversation-footer__new-message"
-        value={inputValue}
+        value={textareaValue}
         placeholder={placeholder}
         onChange={changeHandler}
       />
